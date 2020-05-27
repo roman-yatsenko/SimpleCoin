@@ -1,21 +1,16 @@
-"""This is going to be your wallet. Here you can do several things:
-- Generate a new address (public and private key). You are going
-to use this address (public key) to send or receive any transactions. You can
-have as many addresses as you wish, but keep in mind that if you
-lose its credential data, you will not be able to retrieve it.
-
-- Send coins to another address
-- Retrieve the entire blockchain and check your balance
-
-If this is your first time using this script don't forget to generate
-a new address and edit miner config file with it (only if you are
-going to mine).
-
-Timestamp in hashed message. When you send your transaction it will be received
-by several nodes. If any node mine a block, your transaction will get added to the
-blockchain but other nodes still will have it pending. If any node see that your
-transaction with same timestamp was added, they should remove it from the
-node_pending_transactions list to avoid it get processed more than 1 time.
+"""Это ваш кошелек. Здесь вы можете сделать несколько вещей:
+- Создать новый адрес (открытый и закрытый ключ). Вы будете использовать этот адрес 
+(открытый ключ) для отправки или получения любых транзакций. У вас может быть столько адресов, 
+сколько пожелаете, но если вы потеряете доступ - восстановить его вы уже не сможете.
+- Отправлять монеты на другой адрес.
+- Извлекать целую цепочку и проверять баланс.
+Если вы впервые используете этот скрипт, не забудьте сгенерировать
+новый адрес и отредактируйте файл конфигурации miner.
+Временная метка захэширована. Когда вы отправляете транзакцию, она будет получена
+несколькими узлами. Если какой-либо узел майнит блок, ваша транзакция будет добавлена в
+blockchain, а другие узлы будут ожидать. Если какой-либо узел видит, что ваша
+транзакция с той же меткой времени, они должны удалить ее из
+node_pending_transactions, чтобы избежать ее обработки более 1 раза.
 """
 
 import requests
@@ -32,7 +27,7 @@ def wallet():
         2. Send coins to another wallet
         3. Check transactions\n""")
     if response == "1":
-        # Generate new wallet
+        # Создаем новый кошелек
         print("""=========================================\n
 IMPORTANT: save this credentials or you won't be able to recover your wallet\n
 =========================================\n""")
@@ -48,22 +43,17 @@ IMPORTANT: save this credentials or you won't be able to recover your wallet\n
         response = input("y/n\n")
         if response.lower() == "y":
             send_transaction(addr_from, private_key, addr_to, amount)
-    else:  # Will always occur when response == 3.
+    else:  
         check_transactions()
 
 
 def send_transaction(addr_from, private_key, addr_to, amount):
-    """Sends your transaction to different nodes. Once any of the nodes manage
-    to mine a block, your transaction will be added to the blockchain. Despite
-    that, there is a low chance your transaction gets canceled due to other nodes
-    having a longer chain. So make sure your transaction is deep into the chain
-    before claiming it as approved!
+    """Отправляем транзакцию на разные узлы. Как только главная нода начнет майнить блок,
+    транзакция добавляется в блокчейн. Несмотря на это, существует небольшая вероятность того,
+    что ваша транзакция будет отменена из-за других узлов, имеющих более длинную цепочку. 
+    Поэтому убедитесь, что ваша транзакция глубоко в цепочке, прежде чем утверждать, 
+    что она одобрена!
     """
-    # For fast debugging REMOVE LATER
-    # private_key="181f2448fa4636315032e15bb9cbc3053e10ed062ab0b2680a37cd8cb51f53f2"
-    # amount="3000"
-    # addr_from="SD5IZAuFixM3PTmkm5ShvLm1tbDNOmVlG7tg6F5r7VHxPNWkNKbzZfa+JdKmfBAIhWs9UKnQLOOL1U+R3WxcsQ=="
-    # addr_to="SD5IZAuFixM3PTmkm5ShvLm1tbDNOmVlG7tg6F5r7VHxPNWkNKbzZfa+JdKmfBAIhWs9UKnQLOOL1U+R3WxcsQ=="
 
     if len(private_key) == 64:
         signature, message = sign_ECDSA_msg(private_key)
@@ -82,26 +72,25 @@ def send_transaction(addr_from, private_key, addr_to, amount):
 
 
 def check_transactions():
-    """Retrieve the entire blockchain. With this you can check your
-    wallets balance. If the blockchain is to long, it may take some time to load.
+    """Извлекаем весь блокчейн. Тут вы можете проверить свой баланс. Если блокчейн очень 
+       длинный, загрузка может занять время.
     """
     res = requests.get('http://localhost:5000/blocks')
     print(res.text)
 
 
 def generate_ECDSA_keys():
-    """This function takes care of creating your private and public (your address) keys.
-    It's very important you don't lose any of them or those wallets will be lost
-    forever. If someone else get access to your private key, you risk losing your coins.
-
+    """Эта функция следит за созданием вашего private и public ключа. Очень важно не потерять
+    ни один из них т.к. доступ к кошельку будет потерян. Если кто-то получит доступ к вашему
+    кошельку, вы рискуете потерять свои монеты.
     private_key: str
-    public_ley: base64 (to make it shorter)
+    public_ley: base64
     """
-    sk = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1) #this is your sign (private key)
-    private_key = sk.to_string().hex() #convert your private key to hex
-    vk = sk.get_verifying_key() #this is your verification key (public key)
+    sk = ecdsa.SigningKey.generate(curve=ecdsa.SECP256k1) # private ключ
+    private_key = sk.to_string().hex() # конвертим private ключ в hex
+    vk = sk.get_verifying_key() # public ключ
     public_key = vk.to_string().hex()
-    #we are going to encode the public key to make it shorter
+    # кодируем public ключ, чтобы сделать его короче
     public_key = base64.b64encode(bytes.fromhex(public_key))
 
     filename = input("Write the name of your new address: ") + ".txt"
@@ -110,14 +99,13 @@ def generate_ECDSA_keys():
     print("Your new address and private key are now in the file {0}".format(filename))
 
 def sign_ECDSA_msg(private_key):
-    """Sign the message to be sent
-    private_key: must be hex
-
+    """Подписываем сообщение для отправки
+    private ключ должен быть hex
     return
-    signature: base64 (to make it shorter)
+    signature: base64
     message: str
     """
-    # Get timestamp, round it, make it into a string and encode it to bytes
+    # получаем timestamp, округляем, переводим в строку и кодируем
     message = str(round(time.time()))
     bmessage = message.encode()
     sk = ecdsa.SigningKey.from_string(bytes.fromhex(private_key), curve=ecdsa.SECP256k1)

@@ -1,13 +1,12 @@
-"""Configure this file before you start mining. Check wallet.py for
-more details.
+"""Этот файл нужно изменять до того, как вы запустите майнер. Для лучшего понимания смотрите в
+wallet.py.
 """
 
-# Write your generated adress here. All coins mined will go to this address
+# Тут указываем сгенерированный адрес. Все монеты пойдут сюда.
 MINER_ADDRESS = "q3nf394hjg-random-miner-address-34nf3i4nflkn3oi"
 
-# Write your node url or ip. If you are running it localhost use default
+# Тут укажите URL-адрес ноды или ее ip. Если все запущено на localhost, то пишем так:
 MINER_NODE_URL = "http://localhost:5000"
 
-# Store the url data of every other node in the network
-# so that we can communicate with them
+# А здесь храним URL-адреса каждого узла в сети, чтобы можно было общаться с ними.
 PEER_NODES = []
